@@ -45,7 +45,7 @@
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -60,7 +60,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Winmm.lib"
+				AdditionalDependencies="Winmm.lib mfplat.lib mf.lib mfreadwrite.lib mfuuid.lib shlwapi.lib"
+				OutputFile="$(OutDir)\AudioRecordTest.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -118,7 +119,7 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -133,7 +134,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Winmm.lib"
+				AdditionalDependencies="Winmm.lib mfplat.lib mf.lib mfreadwrite.lib mfuuid.lib shlwapi.lib"
+				OutputFile="$(OutDir)\AudioRecordTest.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -177,6 +179,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\mfRoutines.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\mfUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\mmRoutines.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -202,6 +216,18 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\mfRoutines.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mfUtils.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mmRoutines.h"
+				>
+			</File>
 			<File
 				RelativePath=".\stdafx.h"
 				>
