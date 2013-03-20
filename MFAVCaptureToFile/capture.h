@@ -21,9 +21,10 @@ class DeviceList
 {
     UINT32      m_cDevices;
     IMFActivate **m_ppDevices;
+	BOOL m_useAudio;
 
 public:
-    DeviceList() : m_ppDevices(NULL), m_cDevices(0)
+    DeviceList() : m_ppDevices(NULL), m_cDevices(0), m_useAudio(0)
     {
 
     }
@@ -35,9 +36,10 @@ public:
     UINT32  Count() const { return m_cDevices; }
 
     void    Clear();
-    HRESULT EnumerateDevices();
+    HRESULT EnumerateDevices(BOOL useAudio);
     HRESULT GetDevice(UINT32 index, IMFActivate **ppActivate);
     HRESULT GetDeviceName(UINT32 index, WCHAR **ppszName);
+	BOOL	IsAudio();
 };
 
 
@@ -52,6 +54,7 @@ class CCapture : public IMFSourceReaderCallback
 public:
     static HRESULT CreateInstance(
         HWND     hwnd,
+		BOOL useAudio,
         CCapture **ppPlayer
     );
 
@@ -94,7 +97,7 @@ protected:
     };
 
     // Constructor is private. Use static CreateInstance method to instantiate.
-    CCapture(HWND hwnd);
+    CCapture(HWND hwnd, BOOL useAudio);
 
     // Destructor is private. Caller should call Release.
     virtual ~CCapture();
@@ -102,7 +105,7 @@ protected:
     void    NotifyError(HRESULT hr) { PostMessage(m_hwndEvent, WM_APP_PREVIEW_ERROR, (WPARAM)hr, 0L); }
 
     HRESULT OpenMediaSource(IMFMediaSource *pSource);
-    HRESULT ConfigureCapture(const EncodingParameters& param);
+    HRESULT ConfigureCapture(const EncodingParameters& param, BOOL useAudio);
     HRESULT EndCaptureInternal();
 
     long                    m_nRefCount;        // Reference count.
@@ -117,4 +120,6 @@ protected:
     LONGLONG                m_llBaseTime;
 
     WCHAR                   *m_pwszSymbolicLink;
+
+	int						m_useAudio;
 };
