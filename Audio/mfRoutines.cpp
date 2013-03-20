@@ -148,7 +148,7 @@ HRESULT WriteWaveData(
 		}
 
 		if (pSample == NULL) {
-			printf("No sample\n");
+			//printf("No sample\n");
 			continue;
 		}
 
@@ -329,9 +329,10 @@ HRESULT ConfigureAudioStream(
 		return hr;
 	}
 	if (SUCCEEDED(hr))  {
-		hr = pPartialType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
+		//hr = pPartialType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
+		hr = pPartialType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_Float);
 	} else {
-		printf("ConfigureAudioStream: Error in SetGUID MFAudioFormat_PCM\n");
+		printf("ConfigureAudioStream: Error in SetGUID MFAudioFormat_Float\n");
 		printErrorDescription(hr);
 		return hr;
 	}
