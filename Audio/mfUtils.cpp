@@ -49,10 +49,10 @@ WCHAR *getFriendlyGuidString(GUID guid) {
 void getFriendlyGuidString(GUID guid, WCHAR *szString, int nChars) {
 	WCHAR *szFriendlyString = getFriendlyGuidString(guid);
 	if(wcscmp(szFriendlyString, L"Unrecognized")) {
-		swprintf(szString, nChars, szFriendlyString);
+		swprintf_s(szString, nChars, szFriendlyString);
 	} else {
 		WCHAR *guidString = getGuidString(guid);
-		swprintf(szString, nChars, guidString);
+		swprintf_s(szString, nChars, guidString);
 		::CoTaskMemFree(guidString);
 	}
 }

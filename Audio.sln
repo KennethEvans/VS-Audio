@@ -1,9 +1,9 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Audio", "Audio\Audio.vcproj", "{A3BB5736-54F2-4792-B382-8F7EA18D79C2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFAVCaptureToFile", "MFAVCaptureToFile\MFCaptureToFile.vcproj", "{A23F87C7-B69B-4EE0-91EC-1DD9E6E353B4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MFAVCaptureToFile", "MFAVCaptureToFile\MFAVCaptureToFile.vcproj", "{A23F87C7-B69B-4EE0-91EC-1DD9E6E353B4}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
