@@ -5,9 +5,9 @@
 // Selects an audio stream from the source file, and configures the
 // stream to read MFAudioFormat_Float audio
 HRESULT ConfigureWaveReader(
-							 IMFSourceReader *pReader,   // Pointer to the source reader.
-							 IMFMediaType **ppPCMAudio   // Receives the audio format.
-							 )
+							IMFSourceReader *pReader,   // Pointer to the source reader.
+							IMFMediaType **ppPCMAudio   // Receives the audio format.
+							)
 {
 	IMFMediaType *pReaderType = NULL;
 	IMFMediaType *pSubtype = NULL;
@@ -99,12 +99,12 @@ HRESULT ConfigureWaveReader(
 
 // Writes a block of data to a file
 // hFile: Handle to the file.
-// p: Pointer to the buffer to write.
-// cb: Size of the buffer, in bytes.
-HRESULT WriteToFile(HANDLE hFile, void* p, DWORD cb) {
-	DWORD cbWritten = 0;
+// buf: Pointer to the buffer to write.
+// count: Size of the buffer, in bytes.
+HRESULT WriteToFile(HANDLE hFile, void* buf, DWORD count) {
+	DWORD countWritten = 0;
 	HRESULT hr = S_OK;
-	BOOL bResult = WriteFile(hFile, p, cb, &cbWritten, NULL);
+	BOOL bResult = WriteFile(hFile, buf, count, &countWritten, NULL);
 	if (!bResult) {
 		hr = HRESULT_FROM_WIN32(GetLastError());
 	}
@@ -253,7 +253,7 @@ HRESULT WriteWaveData(
 // Calculates how much audio to write to the WAVE file, given the
 // audio format and the maximum duration of the WAVE file.
 DWORD CalculateMaxAudioDataSize(
-								IMFMediaType *pAudioType,    // The audio format.
+								IMFMediaType *pReaderType,    // The audio format.
 								DWORD cbHeader,              // The size of the WAVE file header.
 								DWORD msecAudioData          // Maximum duration, in milliseconds.
 								)
@@ -262,8 +262,8 @@ DWORD CalculateMaxAudioDataSize(
 	UINT32 cbBytesPerSecond = 0;    // Bytes per second.
 
 	// Get the audio block size and number of bytes/second from the audio format.
-	cbBlockSize = MFGetAttributeUINT32(pAudioType, MF_MT_AUDIO_BLOCK_ALIGNMENT, 0);
-	cbBytesPerSecond = MFGetAttributeUINT32(pAudioType, MF_MT_AUDIO_AVG_BYTES_PER_SECOND, 0);
+	cbBlockSize = MFGetAttributeUINT32(pReaderType, MF_MT_AUDIO_BLOCK_ALIGNMENT, 0);
+	cbBytesPerSecond = MFGetAttributeUINT32(pReaderType, MF_MT_AUDIO_AVG_BYTES_PER_SECOND, 0);
 
 	// Calculate the maximum amount of audio data to write.
 	// This value equals (duration in seconds x bytes/second), but cannot
@@ -343,7 +343,7 @@ HRESULT WriteWaveFile(
 	DWORD cbHeader = 0;         // Size of the WAVE file header, in bytes.
 	DWORD cbAudioData = 0;      // Total bytes of audio data written to the file.
 	DWORD cbMaxAudioData = 0;
-	IMFMediaType *pAudioType = NULL;    // Represents the incoming audio format.
+	IMFMediaType *pReaderType = NULL;    // Represents the incoming audio format.
 
 	// Create the output file
 	HANDLE hFile = INVALID_HANDLE_VALUE;
@@ -355,17 +355,21 @@ HRESULT WriteWaveFile(
 		goto CLEANUP;
 	}
 
-	// Configure the source reader to get uncompressed audio from the source file.
-	hr = ConfigureWaveReader(pReader, &pAudioType);
+	// Configure the source reader
+	hr = ConfigureWaveReader(pReader, &pReaderType);
+	if(FAILED(hr)) {
+		ShowMessage(hr, _T("ConfigureWaveReader failed"));
+		goto CLEANUP;
+	}
 
 	// Write the WAVE file header.
 	if (SUCCEEDED(hr)) {
-		hr = WriteWaveHeader(hFile, pAudioType, &cbHeader);
+		hr = WriteWaveHeader(hFile, pReaderType, &cbHeader);
 	}
 
-	// Calculate the maximum amount of audio to decode, in bytes.
+	// Calculate the maximum amount of audio to decode, in bytes and decode
 	if (SUCCEEDED(hr)) {
-		cbMaxAudioData = CalculateMaxAudioDataSize(pAudioType, cbHeader, msecAudioData);
+		cbMaxAudioData = CalculateMaxAudioDataSize(pReaderType, cbHeader, msecAudioData);
 		// Decode audio data to the file.
 		hr = WriteWaveData(hFile, pReader, cbMaxAudioData, &cbAudioData);
 	}
@@ -379,6 +383,6 @@ CLEANUP:
 	if (hFile != INVALID_HANDLE_VALUE) {
 		CloseHandle(hFile);
 	}
-	SafeRelease(&pAudioType);
+	SafeRelease(&pReaderType);
 	return hr;
 }

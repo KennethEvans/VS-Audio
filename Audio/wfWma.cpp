@@ -4,8 +4,8 @@
 
 struct EncodingParameters
 {
-    GUID    subtype;
-    UINT32  bitrate;
+	GUID    subtype;
+	UINT32  bitrate;
 };
 
 HRESULT CopyAttribute(IMFAttributes *pSrc, IMFAttributes *pDest, const GUID& key)
@@ -27,9 +27,9 @@ HRESULT CopyAttribute(IMFAttributes *pSrc, IMFAttributes *pDest, const GUID& key
 // Selects an audio stream from the source file, and configures the
 // stream to read MFAudioFormat_Float audio
 HRESULT ConfigureWmfReader(
-							 IMFSourceReader *pReader,   // Pointer to the source reader.
-							 IMFMediaType **ppPCMAudio   // Receives the audio format.
-							 )
+						   IMFSourceReader *pReader,   // Pointer to the source reader.
+						   IMFMediaType **ppPCMAudio   // Receives the audio format.
+						   )
 {
 	IMFMediaType *pReaderType = NULL;
 	IMFMediaType *pSubtype = NULL;
@@ -157,25 +157,25 @@ HRESULT ConfigureEncoder(
 	UINT32 count2 = 0xFFFF;
 	hr = pReaderType->GetCount(&count);
 	hr = pReaderType->GetCount(&count2);
-		// Copy all the parameters
-		GUID guid;
-		PROPVARIANT propVariant;
-		for(UINT32 i=0; i < count; i++) {
-			hr = pReaderType->GetItemByIndex(i, &guid, &propVariant);
-			if(FAILED(hr)) {
-				debugMsg(_T("ConfigureEncoder: ")
-					_T("GetItemByIndex failed for index %d (0x%08X)\n"), i);
-				ShowMessage(hr, szDebugString);
-				goto DONE;
-			}
-			hr = CopyAttribute(pReaderType, pType2, guid);
-			if(FAILED(hr)) {
-				debugMsg(_T("ConfigureEncoder: ")
-					_T("CopyAttribute failed for index %d (0x%08X)\n"), i);
-				ShowMessage(hr, szDebugString);
-				goto DONE;
-			}
+	// Copy all the parameters
+	GUID guid;
+	PROPVARIANT propVariant;
+	for(UINT32 i=0; i < count; i++) {
+		hr = pReaderType->GetItemByIndex(i, &guid, &propVariant);
+		if(FAILED(hr)) {
+			debugMsg(_T("ConfigureEncoder: ")
+				_T("GetItemByIndex failed for index %d (0x%08X)\n"), i);
+			ShowMessage(hr, szDebugString);
+			goto DONE;
 		}
+		hr = CopyAttribute(pReaderType, pType2, guid);
+		if(FAILED(hr)) {
+			debugMsg(_T("ConfigureEncoder: ")
+				_T("CopyAttribute failed for index %d (0x%08X)\n"), i);
+			ShowMessage(hr, szDebugString);
+			goto DONE;
+		}
+	}
 
 	// Debug
 	debugMsg(_T("ConfigureEncoder: ")
@@ -193,13 +193,55 @@ DONE:
 	return hr;
 }
 
+HRESULT ReadSamples(IMFSourceReader *pReader, IMFSinkWriter *pWriter,
+					DWORD sink_stream, LONG msecAudioData)
+{
+	HRESULT hr = S_OK;
+	DWORD dwStreamFlags;
+	LONGLONG llTimestamp;
+	LONGLONG llBaseTime;
+	IMFSample *pSample;
+
+	LONGLONG llEndTime = msecAudioData * 10000LL;
+
+	BOOL first = TRUE;
+	while(TRUE) {
+		hr = pReader->ReadSample(
+			sink_stream,            // stream
+			0,                      // control flags
+			NULL,   // actual
+			&dwStreamFlags,         // stream flags
+			&llTimestamp,           // timestamp
+			&pSample                // sample
+			);
+		if(!pSample) continue;
+		if(first) {
+			first = FALSE;
+			llBaseTime = llTimestamp;
+		}
+		// Rebase the time stamp
+		llTimestamp -= llBaseTime;
+		hr = pSample->SetSampleTime(llTimestamp);
+		if (FAILED(hr)) { goto DONE; }
+
+		// Write the sample
+		hr = pWriter->WriteSample(0, pSample);
+		if (FAILED(hr)) { goto DONE; }
+
+		// Quit after the specified time
+		if(llTimestamp > llEndTime) break;
+	}
+
+DONE:
+	return hr;
+}
 
 // Writes a WMA file by getting audio data from the source reader.
 HRESULT WriteWmaFile(
-					  IMFSourceReader *pReader,   // Pointer to the source reader.
-					  WCHAR *szFileName,          // Name of the output file.
-					  LONG msecAudioData          // Maximum amount of audio data to write, in msec.
-					  )
+					 IMFSourceReader *pReader,   // Pointer to the source reader.
+					 WCHAR *szFileName,          // Name of the output file.
+					 LONG msecAudioData          // Maximum amount of audio data to write, in msec.
+					 )
 {
 	HRESULT hr = S_OK;
 	DWORD sink_stream = 0;      // Stream in the sink
@@ -218,13 +260,9 @@ HRESULT WriteWmaFile(
 
 	// Create the sink writer
 	IMFSinkWriter *pWriter;
-	hr = MFCreateSinkWriterFromURL(szFileName, NULL, NULL,&pWriter);
+	hr = MFCreateSinkWriterFromURL(szFileName, NULL, NULL, &pWriter);
 	if(FAILED(hr)) {
 		ShowMessage(hr, _T("MFCreateSinkWriterFromURL failed"));
-#if 0
-		// Debug
-		ShowMessage(hr, _T("pwszFileName=%s", pwszFileName));
-#endif
 		goto DONE;
 	}
 
@@ -255,7 +293,20 @@ HRESULT WriteWmaFile(
 		goto DONE;
 	}
 
+	// Loop over samples
+	hr = ReadSamples(pReader, pWriter, sink_stream, msecAudioData);
+	if(FAILED(hr)) {
+		ShowMessage(hr, _T("ReadSamples failed"));
+		goto DONE;
+	}
+
 DONE:
+	if (pWriter) {
+		pWriter->Finalize();
+	}
 	SafeRelease(&pReaderType);
+	SafeRelease(&pWriter);
+	// pReader will be released later
+
 	return hr;
 }

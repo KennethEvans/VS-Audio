@@ -13,11 +13,11 @@ void printMfAudioInfo(void) {
 
 	IMFMediaSource *pSource = NULL;
 	UINT32 count = 0;
-	IMFAttributes *pConfig = NULL;
+	IMFAttributes *pAttributes = NULL;
 	IMFActivate **ppDevices = NULL;
 
 	// Create an attribute store to hold the search criteria.
-	HRESULT hr = MFCreateAttributes(&pConfig, 1);
+	HRESULT hr = MFCreateAttributes(&pAttributes, 1);
 	if (FAILED(hr)) {
 		printf("Error creating attribute store\n");
 		printErrorDescription(hr);
@@ -25,7 +25,7 @@ void printMfAudioInfo(void) {
 	}
 
 	// Request audio capture devices.
-	hr = pConfig->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, 
+	hr = pAttributes->SetGUID(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, 
 		MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_AUDCAP_GUID);
 	if (FAILED(hr)) {
 		printf("Error requesting audio devices\n");
@@ -34,7 +34,7 @@ void printMfAudioInfo(void) {
 	}
 
 	// Enumerate the devices,
-	hr = MFEnumDeviceSources(pConfig, &ppDevices, &count);
+	hr = MFEnumDeviceSources(pAttributes, &ppDevices, &count);
 	if (FAILED(hr)) {
 		printf("Error enumerating audio devices\n");
 		printErrorDescription(hr);
@@ -45,10 +45,12 @@ void printMfAudioInfo(void) {
 	// Loop over devices
 	WCHAR *szFriendlyName = NULL;
 	for (UINT32 iDevice = 0; iDevice < count; iDevice++) {
+#if 0
 		// DEBUG
 		if(iDevice != 6) {
 			continue;
 		}
+#endif
 		// Get the friendly name of the device
 		hr = S_OK;
 		UINT32 cchName;
@@ -75,7 +77,7 @@ void printMfAudioInfo(void) {
 
 		// Create a source reader from the media source
 		IMFSourceReader *pReader;
-		hr = MFCreateSourceReaderFromMediaSource(pSource, pConfig, &pReader);
+		hr = MFCreateSourceReaderFromMediaSource(pSource, pAttributes, &pReader);
 		if (FAILED(hr)) {
 			printf("Error creating media source for device %d\n", iDevice);
 			printErrorDescription(hr);
@@ -90,7 +92,7 @@ void printMfAudioInfo(void) {
 			MAX_AUDIO_DURATION_MSEC / 1000);
 
 		// Write the file
-//#define USE_WAVE
+		//#define USE_WAVE
 #ifdef USE_WAVE
 		char szFileName[256];
 		sprintf_s(szFileName, "WFAudioTest-Device%02d.wav", iDevice);

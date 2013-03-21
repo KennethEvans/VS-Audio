@@ -248,7 +248,7 @@ HRESULT CCapture::OnReadSample(
 		hr = pSample->SetSampleTime(llTimeStamp);
 		if (FAILED(hr)) { goto DONE; }
 
-		hr = m_pWriter->WriteSample(0, pSample);
+		hr = m_pWriter->WriteSample(0, pSample);  // KE: Should be_sink_stream
 		if (FAILED(hr)) { goto DONE; }
 	}
 
@@ -399,7 +399,7 @@ HRESULT CCapture::StartCapture(
 #endif
 	}
 
-	// Set up the encoding parameters.
+	// Set up the encoding parameters
 	if (SUCCEEDED(hr)) {
 		hr = ConfigureCapture(param, m_useAudio);
 	}
@@ -411,7 +411,7 @@ HRESULT CCapture::StartCapture(
 		m_bFirstSample = TRUE;
 		m_llBaseTime = 0;
 
-		// Request the first frame.
+		// Request the first frame which causes OnReadSample which calls it again
 		hr = m_pReader->ReadSample(
 			m_useAudio ? (DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM :
 			(DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,

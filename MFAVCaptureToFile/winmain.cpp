@@ -489,12 +489,10 @@ void UpdateUI(HWND hDlg) {
 	}
 
 	EnableDialogControl(hDlg, IDC_CAPTURE, bCapturing || bEnable);
-
 	EnableDialogControl(hDlg, IDC_DEVICE_LIST, !bCapturing && bEnable);
 
 	// The following cannot be changed while capture is in progress,
 	// but are OK to change when there are no capture devices.
-
 	EnableDialogControl(hDlg, IDC_CAPTURE_TOP, !bCapturing);
 	EnableDialogControl(hDlg, IDC_CAPTURE_BOTTOM, !bCapturing);
 	EnableDialogControl(hDlg, IDC_AUDIO, !bCapturing);
@@ -541,15 +539,12 @@ void OnDeviceChange(HWND hDlg, WPARAM reason, DEV_BROADCAST_HDR *pHdr)
 	}
 }
 
-void EnableDialogControl(HWND hDlg, int nIDDlgItem, BOOL bEnable)
-{
+void EnableDialogControl(HWND hDlg, int nIDDlgItem, BOOL bEnable) {
 	HWND hwnd = GetDlgItem(hDlg, nIDDlgItem);
 
-	if (!bEnable &&  hwnd == GetFocus())
-	{
+	if (!bEnable &&  hwnd == GetFocus()) {
 		// When disabling a control that has focus, set the
 		// focus to the next control.
-
 		::SendMessage(GetParent(hwnd), WM_NEXTDLGCTL, 0, FALSE);
 	}
 	EnableWindow(hwnd, bEnable);
