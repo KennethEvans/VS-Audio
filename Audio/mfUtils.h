@@ -6,17 +6,6 @@
 
 #include "stdafx.h"
 
-#include <new>
-#include <windows.h>
-#include <mfapi.h>
-#include <mfidl.h>
-#include <mfreadwrite.h>
-#include <Wmcodecdsp.h>
-#include <assert.h>
-#include <Dbt.h>
-#include <shlwapi.h>
-#include <Mferror.h>
-
 WCHAR *getFriendlyGuidString(GUID guid);
 void getFriendlyGuidString(GUID guid, WCHAR *szString, int nChars);
 OLECHAR *getGuidString(GUID guid);

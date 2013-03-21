@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "mmRoutines.h"
 
 const int N_SECONDS = 10;

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "mfUtils.h"
 
 WCHAR *getFriendlyGuidString(GUID guid) {
