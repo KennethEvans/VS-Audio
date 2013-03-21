@@ -354,18 +354,18 @@
 				RelativePath=".\utils.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			>
-			<File
-				RelativePath=".\MFAVCaptureToFile.rc"
+			<Filter
+				Name="Resource Files"
 				>
-			</File>
-			<File
-				RelativePath=".\resource.h"
-				>
-			</File>
+				<File
+					RelativePath=".\MFAVCaptureToFile.rc"
+					>
+				</File>
+				<File
+					RelativePath=".\resource.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Source Files"

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "mfUtils.h"
 
+TCHAR szDebugString[PRINT_STRING_SIZE];
+
 WCHAR *getFriendlyGuidString(GUID guid) {
 	// Audio
 	if(guid == MFAudioFormat_Base) {
@@ -33,7 +35,7 @@ WCHAR *getFriendlyGuidString(GUID guid) {
 		return L"MFAudioFormat_AAC";
 	} else if(guid == MFAudioFormat_ADTS) {
 		return L"MFAudioFormat_ADTS";
-	// Major
+		// Major
 	} else if(guid == MFMediaType_Default) {
 		return L"MFMediaType_Default";
 	} else if(guid == MFMediaType_Audio) {
@@ -66,6 +68,20 @@ WCHAR *getGuidString(GUID guid) {
 	return guidString;
 }
 
+TCHAR *getErrorDescription(HRESULT hr) { 
+	if(FACILITY_WINDOWS == HRESULT_FACILITY(hr)) 
+		hr = HRESULT_CODE(hr); 
+	TCHAR* szErrMsg; 
+
+	if(FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM, 
+		NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		(LPTSTR)&szErrMsg, 0, NULL) != 0) { 
+			return szErrMsg;
+	} else {
+		return NULL;
+	}
+}
+
 void printErrorDescription(HRESULT hr) { 
 	if(FACILITY_WINDOWS == HRESULT_FACILITY(hr)) 
 		hr = HRESULT_CODE(hr); 
@@ -95,4 +111,48 @@ void initializeMfCom() {
 void shutdownMfCom() {
 	MFShutdown();
 	CoUninitialize();
+}
+
+void ShowMessage(HRESULT hrErr, const TCHAR *format, ...) {
+	const size_t MESSAGE_LEN = 1024;
+	TCHAR message[MESSAGE_LEN];
+
+	va_list vargs;
+	va_start(vargs,format);
+	_vstprintf_s(szDebugString, format, vargs);
+	va_end(vargs);
+
+	// Get the description and add the error part
+	TCHAR *szErrMsg = getErrorDescription(hrErr);
+
+	HRESULT hr = StringCchPrintf (message, MESSAGE_LEN,
+		_T("%s (HRESULT = 0x%X)\n%s\n"),
+		szDebugString, hrErr,
+		szErrMsg != NULL ? szErrMsg : TEXT("No Further Information"));
+	if (SUCCEEDED(hr)) {
+		_tprintf(message);
+#ifdef _DEBUG
+		OutputDebugString(szDebugString);
+#endif
+	}
+
+	// Free the description
+	if(szErrMsg) {
+		LocalFree(szErrMsg);
+	}
+}
+
+int debugMsg(const TCHAR *format, ...)
+{
+	va_list vargs;
+
+	va_start(vargs,format);
+	_vstprintf_s(szDebugString,format,vargs);
+	va_end(vargs);
+
+	if(szDebugString[0] == '\0') return 0;
+
+	// Display the string.
+	OutputDebugString(szDebugString);
+	return 0;
 }

@@ -214,6 +214,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\wfWma.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -230,6 +234,10 @@
 			</File>
 			<File
 				RelativePath=".\mfWave.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mfWma.h"
 				>
 			</File>
 			<File

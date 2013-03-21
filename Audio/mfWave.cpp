@@ -3,14 +3,14 @@
 #include "mfRoutines.h"
 
 // Selects an audio stream from the source file, and configures the
-// stream to deliver decoded PCM audio.
-HRESULT ConfigureAudioStream(
+// stream to read MFAudioFormat_Float audio
+HRESULT ConfigureWaveReader(
 							 IMFSourceReader *pReader,   // Pointer to the source reader.
 							 IMFMediaType **ppPCMAudio   // Receives the audio format.
 							 )
 {
-	IMFMediaType *pUncompressedAudioType = NULL;
-	IMFMediaType *pPartialType = NULL;
+	IMFMediaType *pReaderType = NULL;
+	IMFMediaType *pSubtype = NULL;
 
 	// Select the first audio stream, and deselect all other streams.
 	HRESULT hr = pReader->SetStreamSelection(
@@ -19,25 +19,25 @@ HRESULT ConfigureAudioStream(
 		hr = pReader->SetStreamSelection(
 			(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, TRUE);
 	} else {
-		printf("ConfigureAudioStream: Error in SetStreamSelection\n");
+		printf("ConfigureWaveReader: Error in SetStreamSelection\n");
 		printErrorDescription(hr);
 		return hr;
 	}
 
-	// Create a partial media type that specifies uncompressed PCM audio.
-	hr = MFCreateMediaType(&pPartialType);
+	// Create a media subtype that specifies float audio.
+	hr = MFCreateMediaType(&pSubtype);
 	if (SUCCEEDED(hr))  {
-		hr = pPartialType->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+		hr = pSubtype->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
 	} else {
-		printf("ConfigureAudioStream: Error in SetGUID MFMediaType_Audio\n");
+		printf("ConfigureWaveReader: Error in SetGUID MFMediaType_Audio\n");
 		printErrorDescription(hr);
 		return hr;
 	}
 	if (SUCCEEDED(hr))  {
-		//hr = pPartialType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
-		hr = pPartialType->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_Float);
+		//hr = pSubtype->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM);
+		hr = pSubtype->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_Float);
 	} else {
-		printf("ConfigureAudioStream: Error in SetGUID MFAudioFormat_Float\n");
+		printf("ConfigureWaveReader: Error in SetGUID MFAudioFormat_Float\n");
 		printErrorDescription(hr);
 		return hr;
 	}
@@ -47,9 +47,9 @@ HRESULT ConfigureAudioStream(
 	if (SUCCEEDED(hr)) {
 		hr = pReader->SetCurrentMediaType(
 			(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,
-			NULL, pPartialType);
+			NULL, pSubtype);
 	} else {
-		printf("ConfigureAudioStream: Error in SetCurrentMediaType\n");
+		printf("ConfigureWaveReader: Error in SetCurrentMediaType\n");
 		printErrorDescription(hr);
 		return hr;
 	}
@@ -58,9 +58,9 @@ HRESULT ConfigureAudioStream(
 	if (SUCCEEDED(hr)) {
 		hr = pReader->GetCurrentMediaType(
 			(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,
-			&pUncompressedAudioType);
+			&pReaderType);
 	} else {
-		printf("ConfigureAudioStream: Error in GetCurrentMediaType\n");
+		printf("ConfigureWaveReader: Error in GetCurrentMediaType\n");
 		if(hr == MF_E_TOPO_CODEC_NOT_FOUND) {
 			// Codec not found
 			printf("MF_E_TOPO_CODEC_NOT_FOUND 0xC00D5212\n"
@@ -77,23 +77,23 @@ HRESULT ConfigureAudioStream(
 			(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,
 			TRUE);
 	} else {
-		printf("ConfigureAudioStream: Error in SetStreamSelection\n");
+		printf("ConfigureWaveReader: Error in SetStreamSelection\n");
 		printErrorDescription(hr);
 		return hr;
 	}
 
-	// Return the PCM format to the caller.
+	// Return the format to the caller.
 	if (SUCCEEDED(hr)) {
-		*ppPCMAudio = pUncompressedAudioType;
+		*ppPCMAudio = pReaderType;
 		(*ppPCMAudio)->AddRef();
 	} else {
-		printf("ConfigureAudioStream: Error in AddRef\n");
+		printf("ConfigureWaveReader: Error in AddRef\n");
 		printErrorDescription(hr);
 		return hr;
 	}
 
-	SafeRelease(&pUncompressedAudioType);
-	SafeRelease(&pPartialType);
+	SafeRelease(&pReaderType);
+	SafeRelease(&pSubtype);
 	return hr;
 }
 
@@ -160,7 +160,7 @@ HRESULT FixUpChunkSizes(
 	return hr;
 }
 
-// Decodes PCM audio data from the source file and writes it to
+// Decodes audio data from the source file and writes it to
 // the WAVE file.
 HRESULT WriteWaveData(
 					  HANDLE hFile,               // Output file.
@@ -253,7 +253,7 @@ HRESULT WriteWaveData(
 // Calculates how much audio to write to the WAVE file, given the
 // audio format and the maximum duration of the WAVE file.
 DWORD CalculateMaxAudioDataSize(
-								IMFMediaType *pAudioType,    // The PCM audio format.
+								IMFMediaType *pAudioType,    // The audio format.
 								DWORD cbHeader,              // The size of the WAVE file header.
 								DWORD msecAudioData          // Maximum duration, in milliseconds.
 								)
@@ -288,7 +288,7 @@ DWORD CalculateMaxAudioDataSize(
 // and data size, as these values will need to be filled in later.
 HRESULT WriteWaveHeader(
 						HANDLE hFile,               // Output file.
-						IMFMediaType *pMediaType,   // PCM audio format.
+						IMFMediaType *pMediaType,   // The audio format.
 						DWORD *pcbWritten           // Receives the size of the header.
 						)
 {
@@ -297,7 +297,7 @@ HRESULT WriteWaveHeader(
 	WAVEFORMATEX *pWav = NULL;
 	*pcbWritten = 0;
 
-	// Convert the PCM audio format into a WAVEFORMATEX structure.
+	// Convert the audio format into a WAVEFORMATEX structure.
 	hr = MFCreateWaveFormatExFromMFMediaType(pMediaType, &pWav, &cbFormat);
 
 	// Write the 'RIFF' header and the start of the 'fmt ' chunk.
@@ -335,18 +335,28 @@ HRESULT WriteWaveHeader(
 // Writes a WAVE file by getting audio data from the source reader.
 HRESULT WriteWaveFile(
 					  IMFSourceReader *pReader,   // Pointer to the source reader.
-					  HANDLE hFile,               // Handle to the output file.
+					  char *szFileName,           // Name of the output file.
 					  LONG msecAudioData          // Maximum amount of audio data to write, in msec.
 					  )
 {
 	HRESULT hr = S_OK;
 	DWORD cbHeader = 0;         // Size of the WAVE file header, in bytes.
-	DWORD cbAudioData = 0;      // Total bytes of PCM audio data written to the file.
+	DWORD cbAudioData = 0;      // Total bytes of audio data written to the file.
 	DWORD cbMaxAudioData = 0;
-	IMFMediaType *pAudioType = NULL;    // Represents the PCM audio format.
+	IMFMediaType *pAudioType = NULL;    // Represents the incoming audio format.
 
-	// Configure the source reader to get uncompressed PCM audio from the source file.
-	hr = ConfigureAudioStream(pReader, &pAudioType);
+	// Create the output file
+	HANDLE hFile = INVALID_HANDLE_VALUE;
+	hFile = CreateFile(szFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL,
+		CREATE_ALWAYS, 0, NULL);
+	if (hFile == INVALID_HANDLE_VALUE) {
+		hr = HRESULT_FROM_WIN32(GetLastError());
+		printf("Cannot create output file: %s\n", szFileName, hr);
+		goto CLEANUP;
+	}
+
+	// Configure the source reader to get uncompressed audio from the source file.
+	hr = ConfigureWaveReader(pReader, &pAudioType);
 
 	// Write the WAVE file header.
 	if (SUCCEEDED(hr)) {
@@ -365,6 +375,10 @@ HRESULT WriteWaveFile(
 		hr = FixUpChunkSizes(hFile, cbHeader, cbAudioData);
 	}
 
+CLEANUP:
+	if (hFile != INVALID_HANDLE_VALUE) {
+		CloseHandle(hFile);
+	}
 	SafeRelease(&pAudioType);
 	return hr;
 }

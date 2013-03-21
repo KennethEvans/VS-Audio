@@ -66,7 +66,7 @@ HRESULT DeviceList::EnumerateDevices(BOOL useAudio)
 	}
 
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"Failed to enumerate devices");
+		ShowMessage(hr, _T("Failed to enumerate devices"));
 	}
 
 	SafeRelease(&pAttributes);
@@ -322,26 +322,26 @@ HRESULT CCapture::StartCapture(
 	// DEBUG
 	WCHAR *subtype;
 	if(param.subtype == MFAudioFormat_MPEG) {
-		subtype = L"MFAudioFormat_MPEG";
+		subtype = _T("MFAudioFormat_MPEG");
 	} else if(param.subtype == MFAudioFormat_MP3) {
-		subtype = L"MFAudioFormat_MP3";
+		subtype = _T(MFAudioFormat_MP3");
 	} else if(param.subtype == MFAudioFormat_AAC) {
-		subtype = L"MFAudioFormat_AAC";
+		subtype = _T"MFAudioFormat_AAC");
 	} else if(param.subtype == MFAudioFormat_WMAudioV8) {
-		subtype = L"MFAudioFormat_WMAudioV8";
+		subtype = _T"MFAudioFormat_WMAudioV8");
 	} else if(param.subtype == MFAudioFormat_WMAudioV9) {
-		subtype = L"MFAudioFormat_WMAudioV9";
+		subtype = _T("MFAudioFormat_WMAudioV9");
 	} else if(param.subtype == MFAudioFormat_WMAudio_Lossless) {
-		subtype = L"MFAudioFormat_WMAudio_Lossless";
+		subtype = _T("MFAudioFormat_WMAudio_Lossless");
 	} else if(param.subtype == MFVideoFormat_WMV3) {
-		subtype = L"MFVideoFormat_WMV3";
+		subtype = _T"MFVideoFormat_WMV3");
 	} else if(param.subtype == MFVideoFormat_H264) {
-		subtype = L"MFVideoFormat_H264";
+		subtype = _T("MFVideoFormat_H264");
 	} else {
-		subtype = L"Not Regognized";
+		subtype = _T"Not Regognized");
 	}
-	errMsg(L"StartCapture\n\n"
-		L"FileName: %s\nparam.subtype: %s\nparam.bitrate: %d\n", pwszFileName,
+	errMsg(_T("StartCapture\n\n")
+		_T("FileName: %s\nparam.subtype: %s\nparam.bitrate: %d\n"), pwszFileName,
 		subtype, param.bitrate);
 #endif
 
@@ -355,7 +355,7 @@ HRESULT CCapture::StartCapture(
 		(void**)&pSource
 		);
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"StartCapture: ActivateObject failed");
+		ShowMessage(hr, _T("StartCapture: ActivateObject failed"));
 	}
 
 	// Get the symbolic link. This is needed to handle device-
@@ -371,15 +371,15 @@ HRESULT CCapture::StartCapture(
 	}
 	// Debug
 	if (SUCCEEDED(hr)) {
-		debugMsg(L"StartCapture: "
-			L"m_pwszSymbolicLink=%s\n", m_pwszSymbolicLink);
+		debugMsg(_T("StartCapture: ")
+			_T("m_pwszSymbolicLink=%s\n"), m_pwszSymbolicLink);
 	}
 
 	if (SUCCEEDED(hr)) {
 		hr = OpenMediaSource(pSource);
 	}
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"StartCapture: OpenMediaSource failed");
+		ShowMessage(hr, _T("StartCapture: OpenMediaSource failed"));
 	}
 
 	// Create the sink writer
@@ -392,10 +392,10 @@ HRESULT CCapture::StartCapture(
 			);
 	}
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"StartCapture: MFCreateSinkWriterFromURL failed");
+		ShowMessage(hr, _T("StartCapture: MFCreateSinkWriterFromURL failed"));
 #if 0
 		// Debug
-		ShowMessage(hr, L"pwszFileName=%s", pwszFileName);
+		ShowMessage(hr, _T("pwszFileName=%s", pwszFileName));
 #endif
 	}
 
@@ -404,7 +404,7 @@ HRESULT CCapture::StartCapture(
 		hr = ConfigureCapture(param, m_useAudio);
 	}
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"StartCapture: ConfigureCapture failed");
+		ShowMessage(hr, _T("StartCapture: ConfigureCapture failed"));
 	}
 
 	if (SUCCEEDED(hr)) {
@@ -423,7 +423,7 @@ HRESULT CCapture::StartCapture(
 			);
 	}
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"StartCapture: ReadSample failed");
+		ShowMessage(hr, _T("StartCapture: ReadSample failed"));
 	}
 
 	SafeRelease(&pSource);
@@ -563,7 +563,7 @@ HRESULT ConfigureSourceReader(IMFSourceReader *pReader, BOOL useAudio)
 	HRESULT hr = S_OK;
 	BOOL    bUseNativeType = FALSE;
 	GUID subtype = { 0 };
-	IMFMediaType *pType = NULL;
+	IMFMediaType *pReaderType = NULL;
 
 	// If the source's native format matches any of the formats in
 	// the list, prefer the native format.
@@ -577,17 +577,17 @@ HRESULT ConfigureSourceReader(IMFSourceReader *pReader, BOOL useAudio)
 		useAudio ? (DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM :
 		(DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
 		0,  // Type index
-		&pType
+		&pReaderType
 		);
 
 	if (FAILED(hr)) {
-		ShowMessage(hr, L"ConfigureSourceReader: GetNativeMediaType failed");
+		ShowMessage(hr, _T("ConfigureSourceReader: GetNativeMediaType failed"));
 		goto DONE;
 	}
 
-	hr = pType->GetGUID(MF_MT_SUBTYPE, &subtype);
+	hr = pReaderType->GetGUID(MF_MT_SUBTYPE, &subtype);
 	if (FAILED(hr)) {
-		ShowMessage(hr, L"ConfigureSourceReader: GetGUID MF_MT_SUBTYPE failed");
+		ShowMessage(hr, _T("ConfigureSourceReader: GetGUID MF_MT_SUBTYPE failed"));
 		goto DONE;
 	}
 
@@ -598,7 +598,7 @@ HRESULT ConfigureSourceReader(IMFSourceReader *pReader, BOOL useAudio)
 				useAudio ? (DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM :
 				(DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
 				NULL,
-				pType
+				pReaderType
 				);
 
 			bUseNativeType = TRUE;
@@ -613,10 +613,10 @@ HRESULT ConfigureSourceReader(IMFSourceReader *pReader, BOOL useAudio)
 
 		// Try adding a decoder (MF_MT_SUBTYPE).
 		for (UINT32 i = 0; i < nSubtypes; i++) {
-			hr = pType->SetGUID(MF_MT_SUBTYPE, subtypes[i]);
+			hr = pReaderType->SetGUID(MF_MT_SUBTYPE, subtypes[i]);
 			if (FAILED(hr)) {
-				debugMsg(L"ConfigureSourceReader: "
-					L"SetGUID MF_MT_SUBTYPE failed for subtype %d (0x%08X)\n",
+				debugMsg(_T("ConfigureSourceReader: ")
+					_T("SetGUID MF_MT_SUBTYPE failed for subtype %d (0x%08X)\n"),
 					i);
 				goto DONE;
 			}
@@ -625,32 +625,32 @@ HRESULT ConfigureSourceReader(IMFSourceReader *pReader, BOOL useAudio)
 				useAudio ? (DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM :
 				(DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
 				NULL,
-				pType
+				pReaderType
 				);
 			if (SUCCEEDED(hr)) {
 				break;
 			} else {
 				// Debug
-				debugMsg(L"ConfigureSourceReader: "
-					L"Failed for subtype %d (0x%08X)\n", i);
+				debugMsg(_T("ConfigureSourceReader: ")
+					_T("Failed for subtype %d (0x%08X)\n"), i);
 			}
 		}
 		if (FAILED(hr)) {
-			ShowMessage(hr, L"ConfigureSourceReader: "
-				L"Failed to set any of our subtypes (0x%08X)");
+			ShowMessage(hr, _T("ConfigureSourceReader: ")
+				_T("Failed to set any of our subtypes (0x%08X)"));
 			goto DONE;
 		}
 	}
 
 DONE:
-	SafeRelease(&pType);
+	SafeRelease(&pReaderType);
 	return hr;
 }
 
 HRESULT ConfigureEncoder(
 						 const EncodingParameters &params,
 						 BOOL useAudio,
-						 IMFMediaType *pType,
+						 IMFMediaType *pReaderType,
 						 IMFSinkWriter *pWriter,
 						 DWORD *sink_stream
 						 )
@@ -660,7 +660,7 @@ HRESULT ConfigureEncoder(
 
 	hr = MFCreateMediaType(&pType2);
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"ConfigureEncoder: MFCreateMediaType failed");
+		ShowMessage(hr, _T("ConfigureEncoder: MFCreateMediaType failed"));
 		goto DONE;
 	}
 
@@ -670,84 +670,84 @@ HRESULT ConfigureEncoder(
 		hr = pType2->SetGUID( MF_MT_MAJOR_TYPE, MFMediaType_Video );
 	}
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"ConfigureEncoder: SetGUID MF_MT_MAJOR_TYPE failed");
+		ShowMessage(hr, _T("ConfigureEncoder: SetGUID MF_MT_MAJOR_TYPE failed"));
 		goto DONE;
 	}
 
 	hr = pType2->SetGUID(MF_MT_SUBTYPE, params.subtype);
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"ConfigureEncoder: SetGUID MF_MT_SUBTYPE failed");
+		ShowMessage(hr, _T("ConfigureEncoder: SetGUID MF_MT_SUBTYPE failed"));
 		goto DONE;
 	}
 
 	hr = pType2->SetUINT32(MF_MT_AVG_BITRATE, params.bitrate);
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"ConfigureEncoder: SetUINT32 MF_MT_AVG_BITRATE failed");
+		ShowMessage(hr, _T("ConfigureEncoder: SetUINT32 MF_MT_AVG_BITRATE failed"));
 		goto DONE;
 	}
 
 	UINT32 count = 0xFFFF;
 	UINT32 count2 = 0xFFFF;
-	hr = pType->GetCount(&count);
-	hr = pType->GetCount(&count2);
+	hr = pReaderType->GetCount(&count);
+	hr = pReaderType->GetCount(&count2);
 	if(useAudio) {
 		// Copy all the parameters
 		GUID guid;
 		PROPVARIANT propVariant;
 		for(UINT32 i=0; i < count; i++) {
-			hr = pType->GetItemByIndex(i, &guid, &propVariant);
+			hr = pReaderType->GetItemByIndex(i, &guid, &propVariant);
 			if(FAILED(hr)) {
-				debugMsg(L"ConfigureEncoder: "
-					L"GetItemByIndex failed for index %d (0x%08X)\n", i);
+				debugMsg(_T("ConfigureEncoder: ")
+					_T("GetItemByIndex failed for index %d (0x%08X)\n"), i);
 				ShowMessage(hr, szDebugString);
 				goto DONE;
 			}
-			hr = CopyAttribute(pType, pType2, guid);
+			hr = CopyAttribute(pReaderType, pType2, guid);
 			if(FAILED(hr)) {
-				debugMsg(L"ConfigureEncoder: "
-					L"CopyAttribute failed for index %d (0x%08X)\n", i);
+				debugMsg(_T("ConfigureEncoder: ")
+					_T("CopyAttribute failed for index %d (0x%08X)\n"), i);
 				ShowMessage(hr, szDebugString);
 				goto DONE;
 			}
 		}
 	} else {
-		hr = CopyAttribute(pType, pType2, MF_MT_FRAME_SIZE);
+		hr = CopyAttribute(pReaderType, pType2, MF_MT_FRAME_SIZE);
 		if(FAILED(hr)) {
 			ShowMessage(hr, NULL,
-				L"ConfigureEncoder: CopyAttribute MF_MT_FRAME_SIZE failed");
+				_T("ConfigureEncoder: CopyAttribute MF_MT_FRAME_SIZE failed"));
 			goto DONE;
 		}
 
-		hr = CopyAttribute(pType, pType2, MF_MT_FRAME_RATE);
+		hr = CopyAttribute(pReaderType, pType2, MF_MT_FRAME_RATE);
 		if(FAILED(hr)) {
 			ShowMessage(hr, NULL,
-				L"ConfigureEncoder: CopyAttribute MF_MT_FRAME_RATE failed");
+				_T("ConfigureEncoder: CopyAttribute MF_MT_FRAME_RATE failed"));
 			goto DONE;
 		}
 
-		hr = CopyAttribute(pType, pType2, MF_MT_PIXEL_ASPECT_RATIO);
+		hr = CopyAttribute(pReaderType, pType2, MF_MT_PIXEL_ASPECT_RATIO);
 		if(FAILED(hr)) {
 			ShowMessage(hr, NULL,
-				L"ConfigureEncoder: CopyAttribute MF_MT_PIXEL_ASPECT_RATIO failed");
+				_T("ConfigureEncoder: CopyAttribute MF_MT_PIXEL_ASPECT_RATIO failed"));
 			goto DONE;
 		}
 
-		hr = CopyAttribute(pType, pType2, MF_MT_INTERLACE_MODE);
+		hr = CopyAttribute(pReaderType, pType2, MF_MT_INTERLACE_MODE);
 		if(FAILED(hr)) {
 			ShowMessage(hr, NULL,
-				L"ConfigureEncoder: CopyAttribute MF_MT_INTERLACE_MODE failed");
+				_T("ConfigureEncoder: CopyAttribute MF_MT_INTERLACE_MODE failed"));
 			goto DONE;
 		}
 	}
 
 	// Debug
-	debugMsg(L"ConfigureEncoder: "
-		L"pType->GetCount=%d pType2->GetCount=%d\n",
+	debugMsg(_T("ConfigureEncoder: ")
+		_T("pReaderType->GetCount=%d pType2->GetCount=%d\n"),
 		count, count2);
 
 	hr = pWriter->AddStream(pType2, sink_stream);
 	if(FAILED(hr)) {
-		ShowMessage(hr, L"ConfigureEncoder: AddStream failed");
+		ShowMessage(hr, _T("ConfigureEncoder: AddStream failed"));
 		goto DONE;
 	}
 
@@ -764,72 +764,72 @@ DONE:
 //-------------------------------------------------------------------
 
 HRESULT CCapture::ConfigureCapture(const EncodingParameters &param,
-								   BOOL useAudio) {
-									   HRESULT hr = S_OK;
-									   DWORD sink_stream = 0;
-									   IMFMediaType *pType = NULL;
+								   BOOL useAudio)
+{
+	HRESULT hr = S_OK;
+	DWORD sink_stream = 0;
+	IMFMediaType *pReaderType = NULL;
 
-									   hr = ConfigureSourceReader(m_pReader, m_useAudio);
-									   if(FAILED(hr)) {
-										   ShowMessage(hr, L"ConfigureCapture: ConfigureSourceReader failed");
-										   goto DONE;
-									   }
+	hr = ConfigureSourceReader(m_pReader, m_useAudio);
+	if(FAILED(hr)) {
+		ShowMessage(hr, _T("ConfigureCapture: ConfigureSourceReader failed"));
+		goto DONE;
+	}
 
-									   hr = m_pReader->GetCurrentMediaType(
-										   useAudio ? (DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM :
-										   (DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
-										   &pType
-										   );
-									   if(FAILED(hr)) {
-										   ShowMessage(hr, L"ConfigureCapture: GetCurrentMediaType failed");
-										   goto DONE;
-									   }
+	hr = m_pReader->GetCurrentMediaType(
+		useAudio ? (DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM :
+		(DWORD)MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+		&pReaderType
+		);
+	if(FAILED(hr)) {
+		ShowMessage(hr, _T("ConfigureCapture: GetCurrentMediaType failed"));
+		goto DONE;
+	}
 
-									   hr = ConfigureEncoder(param, m_useAudio, pType, m_pWriter, &sink_stream);
-									   if(FAILED(hr)) {
-										   ShowMessage(hr, L"ConfigureCapture: ConfigureEncoder failed");
-										   goto DONE;
-									   }
+	hr = ConfigureEncoder(param, m_useAudio, pReaderType, m_pWriter, &sink_stream);
+	if(FAILED(hr)) {
+		ShowMessage(hr, _T("ConfigureCapture: ConfigureEncoder failed"));
+		goto DONE;
+	}
 
-									   if(!useAudio) {
-										   // Register the color converter DSP for this process, in the video
-										   // processor category. This will enable the sink writer to enumerate
-										   // the color converter when the sink writer attempts to match the
-										   // media types.
+	if(!useAudio) {
+		// Register the color converter DSP for this process, in the video
+		// processor category. This will enable the sink writer to enumerate
+		// the color converter when the sink writer attempts to match the
+		// media types.
 
-										   hr = MFTRegisterLocalByCLSID(
-											   __uuidof(CColorConvertDMO),
-											   MFT_CATEGORY_VIDEO_PROCESSOR,
-											   L"",
-											   MFT_ENUM_FLAG_SYNCMFT,
-											   0,
-											   NULL,
-											   0,
-											   NULL
-											   );
-										   if(FAILED(hr)) {
-											   ShowMessage(hr, L"ConfigureCapture: MFTRegisterLocalByCLSID failed");
-											   goto DONE;
-										   }
-									   }
+		hr = MFTRegisterLocalByCLSID(
+			__uuidof(CColorConvertDMO),
+			MFT_CATEGORY_VIDEO_PROCESSOR,
+			L"",
+			MFT_ENUM_FLAG_SYNCMFT,
+			0,
+			NULL,
+			0,
+			NULL
+			);
+		if(FAILED(hr)) {
+			ShowMessage(hr, _T("ConfigureCapture: MFTRegisterLocalByCLSID failed"));
+			goto DONE;
+		}
+	}
 
-									   hr = m_pWriter->SetInputMediaType(sink_stream, pType, NULL);
-									   if(FAILED(hr)) {
-										   ShowMessage(hr, L"ConfigureCapture: SetInputMediaType failed");
-										   goto DONE;
-									   }
+	hr = m_pWriter->SetInputMediaType(sink_stream, pReaderType, NULL);
+	if(FAILED(hr)) {
+		ShowMessage(hr, _T("ConfigureCapture: SetInputMediaType failed"));
+		goto DONE;
+	}
 
-									   hr = m_pWriter->BeginWriting();
-									   if(FAILED(hr)) {
-										   ShowMessage(hr, L"ConfigureCapture: BeginWriting failed");
-										   goto DONE;
-									   }
+	hr = m_pWriter->BeginWriting();
+	if(FAILED(hr)) {
+		ShowMessage(hr, _T("ConfigureCapture: BeginWriting failed"));
+		goto DONE;
+	}
 
 DONE:
-									   SafeRelease(&pType);
-									   return hr;
+	SafeRelease(&pReaderType);
+	return hr;
 }
-
 
 //-------------------------------------------------------------------
 // EndCaptureInternal
