@@ -64,8 +64,6 @@ void printMfAudioInfo(BOOL useWma) {
 		} else {
 			wprintf(L"%d %s\n", iDevice, szFriendlyName);
 		}
-		CoTaskMemFree(szFriendlyName);
-		szFriendlyName = NULL;
 
 		// Create a media source
 		hr = ppDevices[iDevice]->ActivateObject(IID_PPV_ARGS(&pSource));
@@ -94,7 +92,7 @@ void printMfAudioInfo(BOOL useWma) {
 		// Write the file
 		if(useWma) {
 			WCHAR szFileName[256];
-			swprintf_s(szFileName, L"WFAudioTest-Device%02d.wma", iDevice);
+			swprintf_s(szFileName, L"MFWMA-AudioTest-%s.wma", szFriendlyName);
 			hr = WriteWmaFile(pReader, szFileName, MAX_AUDIO_DURATION_MSEC);
 			if (FAILED(hr)) {
 				wprintf(L"Error writing WMA file for device %d for %s\n", iDevice,
@@ -104,15 +102,15 @@ void printMfAudioInfo(BOOL useWma) {
 			}
 			wprintf(L"    Output is %s\n", szFileName);
 		} else {
-			char szFileName[256];
-			sprintf_s(szFileName, "WFAudioTest-Device%02d.wav", iDevice);
+			WCHAR szFileName[256];
+			swprintf_s(szFileName, L"MFWAV-AudioTest-%s.wav", szFriendlyName);
 			hr = WriteWaveFile(pReader, szFileName, MAX_AUDIO_DURATION_MSEC);
 			if (FAILED(hr)) {
-				printf("Error writing WAV file for device %d\n", iDevice);
+				wprintf(L"Error writing WAV file for device %d\n", iDevice);
 				printErrorDescription(hr);
 				goto CLEANUP;
 			}
-			printf("    Output is %s\n", szFileName);
+			wprintf(L"    Output is %s\n", szFileName);
 		}
 
 CLEANUP:
@@ -120,6 +118,8 @@ CLEANUP:
 		SafeRelease(&pReader);
 	}
 
+	CoTaskMemFree(szFriendlyName);
+	szFriendlyName = NULL;
 	// Release the sources
 	for (DWORD i = 0; i < count; i++)  {
 		ppDevices[i]->Release();

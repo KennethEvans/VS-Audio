@@ -335,7 +335,7 @@ HRESULT WriteWaveHeader(
 // Writes a WAVE file by getting audio data from the source reader.
 HRESULT WriteWaveFile(
 					  IMFSourceReader *pReader,   // Pointer to the source reader.
-					  char *szFileName,           // Name of the output file.
+					  WCHAR *szFileName,           // Name of the output file.
 					  LONG msecAudioData          // Maximum amount of audio data to write, in msec.
 					  )
 {
@@ -347,11 +347,11 @@ HRESULT WriteWaveFile(
 
 	// Create the output file
 	HANDLE hFile = INVALID_HANDLE_VALUE;
-	hFile = CreateFile(szFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL,
+	hFile = CreateFileW(szFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL,
 		CREATE_ALWAYS, 0, NULL);
 	if (hFile == INVALID_HANDLE_VALUE) {
 		hr = HRESULT_FROM_WIN32(GetLastError());
-		printf("Cannot create output file: %s\n", szFileName, hr);
+		wprintf(L"Cannot create output file: %s\n", szFileName, hr);
 		goto CLEANUP;
 	}
 

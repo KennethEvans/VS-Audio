@@ -6,6 +6,6 @@
 
 HRESULT WriteWaveFile(
 					  IMFSourceReader *pReader,   // Pointer to the source reader.
-					  char *szFileName,           // Name of the output file.
+					  WCHAR *szFileName,           // Name of the output file.
 					  LONG msecAudioData          // Maximum amount of audio data to write, in msec.
 					  );

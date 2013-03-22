@@ -221,8 +221,8 @@ void printAudioInfo(void) {
 			printf("  Supports %d of %d standard formats\n",
 				nFormatsSupported, nFormats);
 			printf("  Trying to record for %d sec...\n", N_SECONDS);
-			char fileName[256];
-			sprintf_s(fileName, "AudioTest-Device%02d.wav", i);
+			char fileName[1024];
+			sprintf_s(fileName, "MM-AudioTest-%s.wav", wic.szPname);
 			canRecord = record(i, fileName);
 			if(canRecord == DBL_MAX) {
 				printf("  Cannot record\n");
