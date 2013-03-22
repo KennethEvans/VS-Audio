@@ -8,7 +8,7 @@
 
 const LONG MAX_AUDIO_DURATION_MSEC = 10000; // 10 seconds
 
-void printMfAudioInfo(void) {
+void printMfAudioInfo(BOOL useWma) {
 	printf("MF Audio Info\n");
 
 	IMFMediaSource *pSource = NULL;
@@ -92,29 +92,28 @@ void printMfAudioInfo(void) {
 			MAX_AUDIO_DURATION_MSEC / 1000);
 
 		// Write the file
-		//#define USE_WAVE
-#ifdef USE_WAVE
-		char szFileName[256];
-		sprintf_s(szFileName, "WFAudioTest-Device%02d.wav", iDevice);
-		hr = WriteWaveFile(pReader, szFileName, MAX_AUDIO_DURATION_MSEC);
-		if (FAILED(hr)) {
-			printf("Error writing WAV file for device %d\n", iDevice);
-			printErrorDescription(hr);
-			goto CLEANUP;
+		if(useWma) {
+			WCHAR szFileName[256];
+			swprintf_s(szFileName, L"WFAudioTest-Device%02d.wma", iDevice);
+			hr = WriteWmaFile(pReader, szFileName, MAX_AUDIO_DURATION_MSEC);
+			if (FAILED(hr)) {
+				wprintf(L"Error writing WMA file for device %d for %s\n", iDevice,
+					szFileName);
+				printErrorDescription(hr);
+				goto CLEANUP;
+			}
+			wprintf(L"    Output is %s\n", szFileName);
+		} else {
+			char szFileName[256];
+			sprintf_s(szFileName, "WFAudioTest-Device%02d.wav", iDevice);
+			hr = WriteWaveFile(pReader, szFileName, MAX_AUDIO_DURATION_MSEC);
+			if (FAILED(hr)) {
+				printf("Error writing WAV file for device %d\n", iDevice);
+				printErrorDescription(hr);
+				goto CLEANUP;
+			}
+			printf("    Output is %s\n", szFileName);
 		}
-		printf("    Output is %s\n", szFileName);
-#else
-		WCHAR szFileName[256];
-		swprintf_s(szFileName, L"WFAudioTest-Device%02d.wma", iDevice);
-		hr = WriteWmaFile(pReader, szFileName, MAX_AUDIO_DURATION_MSEC);
-		if (FAILED(hr)) {
-			wprintf(L"Error writing WMA file for device %d for %s\n", iDevice,
-				szFileName);
-			printErrorDescription(hr);
-			goto CLEANUP;
-		}
-		wprintf(L"    Output is %s\n", szFileName);
-#endif
 
 CLEANUP:
 		// This should also release the media source
@@ -135,14 +134,22 @@ int _tmain(int argc, _TCHAR* argv[])
 			printAudioInfo();
 		} else if(!_stricmp(argv[1], _T("-mf"))) {
 			initializeMfCom();
-			printMfAudioInfo();
+			printMfAudioInfo(TRUE);
+			shutdownMfCom();
+		} else if(!_stricmp(argv[1], _T("-mfwma"))) {
+			initializeMfCom();
+			printMfAudioInfo(TRUE);
+			shutdownMfCom();
+		} else if(!_stricmp(argv[1], _T("-mfwav"))) {
+			initializeMfCom();
+			printMfAudioInfo(FALSE);
 			shutdownMfCom();
 		} else {
 			printf("Invalid option %s\n", argv[1]);
 		}
 	} else {
 		initializeMfCom();
-		printMfAudioInfo();
+		printMfAudioInfo(TRUE);
 		shutdownMfCom();
 	}
 	printf("All Done\n");

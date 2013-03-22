@@ -9,4 +9,3 @@
 
 HRESULT enumerateTypesForStreams(IMFSourceReader *pReader);
 HRESULT enumerateTypesForStream(IMFSourceReader *pReader, DWORD dwStreamIndex);
-void printMfAudioInfo(void);
